@@ -1,0 +1,365 @@
+// CREATE DATABASE
+// Import necessary namespaces
+using System;
+using System.Data.SqlClient;
+
+class Program
+{
+    static void Main()
+    {
+        // Connection string to your SQL Server
+        string connectionString = "Data Source=your_server;Initial Catalog=master;Integrated Security=True;";
+
+        // Name of your new database
+        string databaseName = "YourDatabaseName";
+
+        // Create the database
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            using (SqlCommand command = new SqlCommand($"CREATE DATABASE {databaseName}", connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+
+        Console.WriteLine("Database created successfully.");
+    }
+}
+
+//Create Table Employee with Primary Key Constraint
+// Import necessary namespaces
+using System;
+using System.Data.SqlClient;
+
+class Program
+{
+    static void Main()
+    {
+        // Connection string to your SQL Server
+        string connectionString = "Data Source=your_server;Initial Catalog=YourDatabaseName;Integrated Security=True;";
+
+        // SQL query to create Employee table with primary key
+        string createTableQuery = @"
+            CREATE TABLE Employee
+            (
+                Id INT PRIMARY KEY,
+                Name NVARCHAR(100),
+                Age INT,
+                Department NVARCHAR(50)
+            )";
+
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            using (SqlCommand command = new SqlCommand(createTableQuery, connection))
+            {
+                command.ExecuteNonQuery();
+            }
+        }
+
+        Console.WriteLine("Table Employee created successfully.");
+    }
+}
+
+//Print All Information
+
+// Import necessary namespaces
+using System;
+using System.Data.SqlClient;
+
+class Program
+{
+    static void Main()
+    {
+        // Connection string to your SQL Server
+        string connectionString = "Data Source=your_server;Initial Catalog=YourDatabaseName;Integrated Security=True;";
+
+        // SQL query to select all data from Employee table
+        string selectQuery = "SELECT * FROM Employee";
+
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            using (SqlCommand command = new SqlCommand(selectQuery, connection))
+            {
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        Console.WriteLine($"Id: {reader["Id"]}, Name: {reader["Name"]}, Age: {reader["Age"]}, Department: {reader["Department"]}");
+                    }
+                }
+            }
+        }
+    }
+}
+
+//CRUD OPERTION
+
+static void PerformCRUDOperations()
+    {
+        // Assume you have Insert, Update, and Delete methods implemented here
+        // Insert();
+        // Update();
+        // Delete();
+    }
+
+    // Implement Insert, Update, Delete methods as needed
+
+    // Example of Insert method:
+    static void Insert(int id, string name, int age, string department)
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            connection.Open();
+
+            string insertQuery = "INSERT INTO Employee (Id, Name, Age, Department) VALUES (@Id, @Name, @Age, @Department)";
+
+            using (SqlCommand command = new SqlCommand(insertQuery, connection))
+            {
+                command.Parameters.AddWithValue("@Id", id);
+                command.Parameters.AddWithValue("@Name", name);
+                command.Parameters.AddWithValue("@Age", age);
+                command.Parameters.AddWithValue("@Department", department);
+
+                command.ExecuteNonQuery();
+            }
+        }
+
+        Console.WriteLine("Record inserted successfully.");
+        PrintAllInformation(); // Display updated information
+    }
+
+    // Example of Update method:
+    static void Update(int id, string name, int age, string department)
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                string updateQuery = "UPDATE Employee SET Name = @Name, Age = @Age, Department = @Department WHERE Id = @Id";
+
+                using (SqlCommand command = new SqlCommand(updateQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+                    command.Parameters.AddWithValue("@Name", name);
+                    command.Parameters.AddWithValue("@Age", age);
+                    command.Parameters.AddWithValue("@Department", department);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            MessageBox.Show("Record updated successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+    }
+
+    // Example of Delete method:
+    static void Delete(int id, string name, int age, string department)
+    {
+        using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                string deleteQuery = "DELETE FROM Employee WHERE Id = @Id";
+
+                using (SqlCommand command = new SqlCommand(deleteQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            MessageBox.Show("Record deleted successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+    }
+}
+
+//Update information using Id and apply the validation in the entire form
+
+
+using System;
+using System.Data.SqlClient;
+using System.Windows.Forms;
+
+namespace YourNamespace
+{
+    public partial class EmployeeForm : Form
+    {
+        private string connectionString = "Data Source=your_server;Initial Catalog=YourDatabaseName;Integrated Security=True;";
+        
+        public EmployeeForm()
+        {
+            InitializeComponent();
+        }
+
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            // Validate input
+            if (!ValidateInput())
+            {
+                MessageBox.Show("Please enter valid information.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Perform update
+            int id = int.Parse(txtId.Text);
+            string name = txtName.Text;
+            int age = int.Parse(txtAge.Text);
+            string department = txtDepartment.Text;
+
+            UpdateEmployee(id, name, age, department);
+
+            // Display updated information
+            PrintAllInformation();
+        }
+
+        private bool ValidateInput()
+        {
+            // Implement your validation logic here
+            // For example, check if the Id is a positive integer, if Age is a valid number, etc.
+            // Return true if validation passes, false otherwise
+
+            // Sample validation:
+            if (string.IsNullOrWhiteSpace(txtName.Text) || !int.TryParse(txtAge.Text, out _))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private void UpdateEmployee(int id, string name, int age, string department)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                string updateQuery = "UPDATE Employee SET Name = @Name, Age = @Age, Department = @Department WHERE Id = @Id";
+
+                using (SqlCommand command = new SqlCommand(updateQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+                    command.Parameters.AddWithValue("@Name", name);
+                    command.Parameters.AddWithValue("@Age", age);
+                    command.Parameters.AddWithValue("@Department", department);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            MessageBox.Show("Record updated successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void PrintAllInformation()
+        {
+            // Implement the logic to display all information in a DataGridView or any other control
+            // For example, refresh the DataGridView with the updated data
+        }
+    }
+}
+
+//After saving the information the information should be display in the data grid view  
+
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Windows.Forms;
+
+namespace YourNamespace
+{
+    public partial class EmployeeForm : Form
+    {
+        private string connectionString = "Data Source=your_server;Initial Catalog=YourDatabaseName;Integrated Security=True;";
+
+        public EmployeeForm()
+        {
+            InitializeComponent();
+            LoadData();
+        }
+
+        private void btnUpdate_Click(object sender, EventArgs e)
+        {
+            // Validate input
+            if (!ValidateInput())
+            {
+                MessageBox.Show("Please enter valid information.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Perform update
+            int id = int.Parse(txtId.Text);
+            string name = txtName.Text;
+            int age = int.Parse(txtAge.Text);
+            string department = txtDepartment.Text;
+
+            UpdateEmployee(id, name, age, department);
+
+            // Display updated information
+            LoadData();
+        }
+
+        private void UpdateEmployee(int id, string name, int age, string department)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                string updateQuery = "UPDATE Employee SET Name = @Name, Age = @Age, Department = @Department WHERE Id = @Id";
+
+                using (SqlCommand command = new SqlCommand(updateQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+                    command.Parameters.AddWithValue("@Name", name);
+                    command.Parameters.AddWithValue("@Age", age);
+                    command.Parameters.AddWithValue("@Department", department);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            MessageBox.Show("Record updated successfully.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private bool ValidateInput()
+        {
+            // Implement your validation logic here
+            // For example, check if the Id is a positive integer, if Age is a valid number, etc.
+            // Return true if validation passes, false otherwise
+
+            // Sample validation:
+            if (string.IsNullOrWhiteSpace(txtName.Text) || !int.TryParse(txtAge.Text, out _))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private void LoadData()
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                string selectQuery = "SELECT * FROM Employee";
+
+                using (SqlCommand command = new SqlCommand(selectQuery, connection))
+                {
+                    SqlDataAdapter adapter = new SqlDataAdapter(command);
+                    DataTable dataTable = new DataTable();
+                    adapter.Fill(dataTable);
+
+                    // Update the DataGridView's data source
+                    dataGridView1.DataSource = dataTable;
+                }
+            }
+        }
+    }
+}
+
